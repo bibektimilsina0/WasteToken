@@ -122,20 +122,25 @@ if (isset($_SESSION['userloggedin']) && $_SESSION['userloggedin'] === 'true') {
         }
 
         .connectmetamask {
-            background-color: #3498db;
-            color: #fff;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 18px;
-            margin: 20px 0;
-            display: relative;
-            justify-content: center;
-            align-items: center;
-            width: 50%;
-            margin-left: 30%;
-        }
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    margin: 20px 20px;
+    display: inline-block; /* Changed to inline-block to allow width to work */
+    width: 20%; /* Adjust the width as needed */
+    text-align: center; /* Center the text */
+}
+
+/* Adjust the parent container */
+.container {
+    display: flex;
+    justify-content: flex-end; 
+}
+
     </style>
 
 </head>
@@ -149,9 +154,11 @@ if (isset($_SESSION['userloggedin']) && $_SESSION['userloggedin'] === 'true') {
     <?php
 
     ?>
+    <div class="container ">
     <button id="connect" class="connectmetamask">Connect to MetaMask</button>
+    </div>
     <div class="tittle">
-        <h2>Pending Ordered</h2>
+        <h2>Pending Order</h2>
         <p class="confirmedordertext">Be Patience! it might take up to 12 hours for seller to confirm</p>
 
     </div>
