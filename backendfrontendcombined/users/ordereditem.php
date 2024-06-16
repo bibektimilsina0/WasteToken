@@ -155,7 +155,7 @@ if (isset($_SESSION['userloggedin']) && $_SESSION['userloggedin'] === 'true') {
 
     ?>
     <div class="container ">
-    <button id="connect" class="connectmetamask">Connect to MetaMask</button>
+    <button id="connecttometamask" class="connectmetamask">Connect to MetaMask</button>
     </div>
     <div class="tittle">
         <h2>Pending Order</h2>
@@ -237,7 +237,7 @@ if (isset($_SESSION['userloggedin']) && $_SESSION['userloggedin'] === 'true') {
         }
         ?>
     </section>
-
-    <script src="../../web3/index.js" type="module"></script>
-
+    <script src="../../web3/test.js" type="module"></script>
+    <!-- <script src="../../web3/index.js" type="module"></script> -->
+    </body>
 </html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MetaMask Integration with Contract</title>
+</head>
+<body>
+  <h1>MetaMask Integration with Contract</h1>
+  <button id="connectButton">Connect MetaMask</button>
+  <button id="buyTokensButton" disabled>Buy Tokens</button>
+  <button id="createTradeButton" disabled>Create Trade</button>
+  <button id="redeemTokensButton" disabled>Redeem Tokens</button>
+
+  <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
+  <script>
+    document.getElementById("connectButton").onclick = connectMetaMask;
+    document.getElementById("buyTokensButton").onclick = buyTokens;
+    document.getElementById("createTradeButton").onclick = createTrade;
+    document.getElementById("redeemTokensButton").onclick = redeemTokens;
+
+    let web3;
+    let accounts;
+
+    const address = '0x2f611E2446bF967BE98f9d7e4eB6A5EdDD693830';
+    const abi = [
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "tokenAddress",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "buyer",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "TokensPurchased",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "seller",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "TokensRedeemed",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "uint256",
+            "name": "tradeId",
+            "type": "uint256"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "buyer",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "seller",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "TradeCompleted",
+        "type": "event"
+      },
+      {
+        "inputs": [],
+        "name": "NEA",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "buyTokens",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "seller",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "createTrade",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "redeemTokens",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "token",
+        "outputs": [
+          {
+            "internalType": "contract WasteKonToken",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "tradeCounter",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "name": "trades",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "buyer",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "seller",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "completed",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "withdrawEther",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }
+    ];
+
+    var contract;
+
+    async function connectMetaMask() {
+      if (window.ethereum) {
+        try {
+          // Request account access if needed
+          accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+
+          // We now have the user's accounts
+          console.log("Connected accounts:", accounts);
+
+          // Initialize Web3
+          web3 = new Web3(window.ethereum);
+
+          // Initialize contract
+          contract = new web3.eth.Contract(abi, address);
+
+          // Enable the buttons for interacting with the contract
+          document.getElementById("buyTokensButton").disabled = false;
+          document.getElementById("createTradeButton").disabled = false;
+          document.getElementById("redeemTokensButton").disabled = false;
+        } catch (error) {
+          console.error("User denied account access or error:", error);
+        }
+      } else {
+        console.error("MetaMask is not installed.");
+      }
+    }
+
+    async function buyTokens() {
+      const amountInEther = "0.1";  // Amount to send in Ether
+      try {
+        const receipt = await contract.methods.buyTokens(web3.utils.toWei(amountInEther, "ether")).send({
+          from: accounts[0],
+          value: web3.utils.toWei(amountInEther, "ether")
+        });
+        console.log("Tokens bought, transaction receipt:", receipt);
+      } catch (error) {
+        console.error("Error buying tokens:", error);
+      }
+    }
+
+    async function createTrade() {
+      const sellerAddress = "0xRecipientAddress";  // Replace with the seller's address
+      const amount = "100";  // Amount to trade
+      try {
+        const receipt = await contract.methods.createTrade(sellerAddress, amount).send({
+          from: accounts[0]
+        });
+        console.log("Trade created, transaction receipt:", receipt);
+      } catch (error) {
+        console.error("Error creating trade:", error);
+      }
+    }
+
+    async function redeemTokens() {
+      const amount = "50";  // Amount to redeem
+      try {
+        const receipt = await contract.methods.redeemTokens(amount).send({
+          from: accounts[0]
+        });
+        console.log("Tokens redeemed, transaction receipt:", receipt);
+      } catch (error) {
+        console.error("Error redeeming tokens:", error);
+      }
+    }
+  </script>
+</body>
+</html>
